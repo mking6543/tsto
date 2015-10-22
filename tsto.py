@@ -867,9 +867,9 @@ innerLandData.creationTime: %s""" % (
 
     def tokenLogin(self):
         if self.tokenLoadDefault():
-            raise TypeError("ERR: wrong file format.")
-        else:
             self.doAuthWithCryptedToken(self.mEncrToken)
+        else:
+            raise TypeError("ERR: wrong file format.")
 
     def doAdbPull(self):
         files = os.popen('adb shell "ls %s"' % ADB_SAVE_DIR).read()
