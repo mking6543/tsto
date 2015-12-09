@@ -30,12 +30,12 @@ CT_PROTOBUF  = 'application/x-protobuf'
 CT_JSON      = 'application/json'
 CT_XML       = 'application/xaml+xml'
 ADB_SAVE_DIR = '/sdcard/Android/data/com.ea.game.simpsons4_row/files/save/'
-VERSION_APP  = '4.17.1'
-VERSION_LAND = '32'
+VERSION_APP  = '4.18.2'
+VERSION_LAND = '34'
 
 class TSTO:
     def __init__(self):
-#        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
         self.dataVerison                   = int(VERSION_LAND)
         self.mLogined                      = False
         self.mLandMessage                  = LandData_pb2.LandMessage()
