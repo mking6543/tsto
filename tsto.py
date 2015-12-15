@@ -120,6 +120,7 @@ class TSTO:
         self.mUserId    = data["userId"]
         self.mEncrToken = data["encryptedToken"]
         self.doAuthWithToken(data["token"])
+        self.tokenStore()
 
     def doAuthWithCryptedToken(self, cryptedToken):
         data = self.doRequest("POST", CT_JSON, URL_TNTNUCLEUS
