@@ -873,13 +873,16 @@ innerLandData.creationTime: %s""" % (
 
     def doAdbPull(self):
         files = os.popen('adb shell "ls %s"' % ADB_SAVE_DIR).read()
+        print(files)
         if self.mUid not in files:
             raise TypeError("ERR: LandMessage file not found in save directory.")
         fn = '%s%s' % (self.mUid, int(time.time()))
         os.popen('adb pull "%s%s" %s'           % (ADB_SAVE_DIR, self.mUid, fn))
         os.popen('adb pull "%s%sExtra" %sExtra' % (ADB_SAVE_DIR, self.mUid, fn))
         self.doFileOpen(('load', fn))
-        self.doFileOpenExtra(('loadextra', fn + 'Extra'))
+        try:
+            self.doFileOpenExtra(('loadextra', fn + 'Extra'))
+        except: pass
     
     def doAdbPush(self):
         os.popen('adb shell "rm %s%sB"'      % (ADB_SAVE_DIR, self.mUid))
@@ -888,9 +891,11 @@ innerLandData.creationTime: %s""" % (
         os.popen('adb shell "rm %sLogMessagesSave"' % (ADB_SAVE_DIR))
         fn = '%s%s' % (self.mUid, int(time.time()))
         self.doFileSave(('save', fn))
-        self.doFileSaveExtra(('saveextra', fn + 'Extra'))
         os.popen('adb push "%s" "%s%s"'           % (fn, ADB_SAVE_DIR, self.mUid))
-        os.popen('adb push "%sExtra" "%s%sExtra"' % (fn, ADB_SAVE_DIR, self.mUid))
+        try:
+            self.doFileSaveExtra(('saveextra', fn + 'Extra'))
+            os.popen('adb push "%sExtra" "%s%sExtra"' % (fn, ADB_SAVE_DIR, self.mUid))
+        except: pass
 
     def backupsShow(self):
         self.checkLogined()
