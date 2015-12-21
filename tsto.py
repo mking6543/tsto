@@ -550,7 +550,7 @@ innerLandData.creationTime: %s""" % (
                 self.inventoryAdd(('ia', str(itemid), itemtype, count))
 
     def donutsAdd(self, args):
-        amout = int(args[1])
+        amount = int(args[1])
         elm = self.getExtraLandMessage()
         nextId = self.mLandMessage.innerLandData.nextCurrencyID
         sum = 0
