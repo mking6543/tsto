@@ -856,14 +856,16 @@ innerLandData.creationTime: %s""" % (
         os.remove(self.tokenPath())
 
     def tokenLoadDefault(self):
-        content = list()
-        with open(self.tokenPath(), 'r') as f:
-            content = [x.strip('\n') for x in f.readlines()]
-        if len(content) >= 3:
-            self.mToken     = content[0]
-            self.mEncrToken = content[1]
-            self.mUid       = content[2]
-            return True
+        try:
+            content = list()
+            with open(self.tokenPath(), 'r') as f:
+                content = [x.strip('\n') for x in f.readlines()]
+            if len(content) >= 3:
+                self.mToken     = content[0]
+                self.mEncrToken = content[1]
+                self.mUid       = content[2]
+                return True
+        except: pass
         return False
 
     def tokenLogin(self):
