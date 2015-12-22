@@ -53,6 +53,7 @@ class TSTO:
         self.mMhClientVersion              = "Android." + VERSION_APP
         self.mSesSimpsons                  = requests.Session()
         self.mSesOther                     = requests.Session()
+        self.mUid                          = None
         self.tokenLoadDefault()
 
 ### Network ###
@@ -901,7 +902,8 @@ innerLandData.creationTime: %s""" % (
         except: pass
 
     def backupsShow(self):
-        self.checkLogined()
+        if self.mUid == None:
+            raise TypeError("ERR: I don't know your mayhem ID. Login first.")
         begining = self.mUid + '.'
         entries  = (fn for fn in os.listdir('.') if fn.startswith(begining))
         entries  = ((os.stat(path), path) for path in entries)
