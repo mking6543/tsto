@@ -4,13 +4,8 @@ The Simpsons Tapped Out tool
 Installation
 
 - install Python;
-- install Google protobuf (protoc tool);
 - install Google protobuf library for Python (using pip for example);
 - install Requests Python library (using pip for example).
-
-Prepare your version of LandData_pb2.py (or use it from repo)
-
-    protoc --python_out=. LandData.proto
 
 Usage examples
 
