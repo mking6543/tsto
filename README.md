@@ -15,15 +15,6 @@ List of supported commands:
     help
     quit
 
-Add 1000 donuts to your account email@host.com:
-
-    python tsto.py
-    login email@host.com password
-    download
-    donuts 1000
-    upload
-    quit
-
 Store your town status into ./land.backup file:
 
     python tsto.py
