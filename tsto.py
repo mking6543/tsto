@@ -54,6 +54,7 @@ class TSTO:
         self.mSesSimpsons                  = requests.Session()
         self.mSesOther                     = requests.Session()
         self.mUid                          = None
+        self.mPrompt                       = "tsto > "
         self.tokenLoadDefault()
 
 ### Network ###
@@ -179,6 +180,7 @@ class TSTO:
                 , "/mh/games/bg_gameserver_plugin/protoland/%s/" % self.mUid, True)
         self.mLandMessage = LandData_pb2.LandMessage()
         self.mLandMessage.ParseFromString(data)
+        self.mPrompt = "%s@tsto > " % self.mLandMessage.friendData.name
         # make backup
         self.doFileSave(('save', "%s.%f" % (self.mUid, time.time())))
 
@@ -819,6 +821,7 @@ innerLandData.creationTime: %s""" % (
     def doFileOpen(self, args):
         self.mLandMessage = self.messageLoadFromFile(args[1], LandData_pb2.LandMessage())
         self.mUid = self.mLandMessage.id
+        self.mPrompt = "%s@tsto > " % self.mLandMessage.friendData.name
 
     def doFileSaveExtra(self, args):
         self.messageStoreToFile(args[1], self.mLandMessageExtra)
@@ -995,7 +998,7 @@ cmds = {
     "cleanpurchases": tsto.cleanPurchases,
 }
 while True :
-    args = raw_input("tsto > ").split()
+    args = raw_input(tsto.mPrompt).split()
     args_count = len(args)
     if args_count == 0:
         continue
