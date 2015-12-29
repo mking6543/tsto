@@ -485,6 +485,40 @@ innerLandData.creationTime: %s""" % (
 
 ### In-game items ###
 
+    def colliderRecharge(self):
+        # get instance id
+        id = self.mLandMessage.innerLandData.nextInstanceID
+
+        # get list
+        dl = self.mLandMessage.userData.powerupDataList.powerupData
+
+        # clean powerupDataList items
+        for i in reversed(range(len(dl))):
+            del dl[i]
+
+        # timestamp
+        ts = int(time.time())
+
+        # create a new items
+        pd = dl.add()
+        pd.entityID      = id
+        pd.timeBeganMS   = ((ts + (24 * 60 * 60 * 19)) * 1000) + 953
+        pd.powerupTypeID = 5
+        pd.stateEnum     = 2
+
+        pd = dl.add()
+        pd.entityID      = id+1
+        pd.powerupTypeID = 5
+        pd.stateEnum     = 1
+
+        # set varibles
+        self.varChange(('vc', 'NewUserPowerUps_StartTime', ts))
+        ts = ts + (24 * 60 * 60 * 1);
+        self.varChange(('vc', 'NewUserPowerUps_ResurfaceTime', ts))
+
+        # save instance counter
+        self.mLandMessage.innerLandData.nextInstanceID = id + 2
+
     def arrSplit(self, arr):
         itms = []
         for it in arr.split(','):
@@ -983,6 +1017,7 @@ cmds = {
     "backups": tsto.backupsShow,
     "friends": tsto.friendsShow,
     "download": tsto.doLandDownload,
+    "recharge": tsto.colliderRecharge,
     "showtimes": tsto.showTimes,
     "resetnotif": tsto.doResetNotifications,
     "spendables": tsto.spendablesShow,
