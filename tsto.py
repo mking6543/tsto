@@ -724,8 +724,11 @@ innerLandData.creationTime: %s""" % (
         se.prizeDataSet.prizeData[0].nextPrize = nextPrize
 
     def cleanPurchases(self):
+        self.checkDownloaded()
+        self.mLandMessage.ClearField("processedPurchaseData")
         for i in reversed(range(len(self.mLandMessage.purchases))):
             del self.mLandMessage.purchases[i]
+        self.mLandMessage.userData.firstPurchase = False
 
     def cleanR(self):
         data=''
