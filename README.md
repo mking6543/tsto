@@ -53,4 +53,13 @@ Set current level and FP level to given values:
     upload
     quit
 
+Add 1000 donuts to your account email@host.com:
+
+    python tsto.py
+    login email@host.com password
+    download
+    donuts 1000
+    upload
+    quit
+
 The script has a lot of things to do; just execute 'help' command and examine it output.

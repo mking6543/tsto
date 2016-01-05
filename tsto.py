@@ -483,6 +483,23 @@ innerLandData.creationTime: %s""" % (
 
 ### In-game items ###
 
+    def donutsAdd(self, args):
+        amount = int(args[1])
+        elm = self.getExtraLandMessage()
+        nextId = self.mLandMessage.innerLandData.nextCurrencyID
+        sum = 0
+        while sum < amount:
+            cur = random.randint(499, 500)
+            if sum + cur > amount:
+                cur = amount - sum
+            delta = elm.currencyDelta.add()
+            delta.id = nextId
+            delta.reason = "JOB"
+            delta.amount = cur
+            nextId += 1
+            sum += cur
+        self.mLandMessage.innerLandData.nextCurrencyID = nextId
+
     def arrSplit(self, arr):
         itms = []
         for it in arr.split(','):
@@ -925,6 +942,7 @@ adbpush                local device save path using Android Debug Bridge
 prizeset id number   - set current prize number for specialEvent with given id 
 vs name[,name] val   - set variable(s) to value
 vars [name[,name]]   - print variables with given names or all
+donuts count         - set donuts for logined acc to count
 ia ids type count=1  - add item(s) with id and type into inventory
 ic id type count     - set count item with id and type
 spendable id count   - set count spendable with id
@@ -957,6 +975,7 @@ cmdwarg = {
     "save": tsto.doFileSave,
     "login": tsto.doAuth,
     "money": tsto.moneySet,
+    "donuts": tsto.donutsAdd,
     "setlevel": tsto.levelSet,
     "prizeset": tsto.nextPrizeSet,
     "spendable": tsto.spendableSet,
