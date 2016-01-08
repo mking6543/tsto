@@ -822,6 +822,24 @@ innerLandData.creationTime: %s""" % (
             if printAll == False and ns.count(v.name) == 0: continue
             print("%s=%s" % (v.name, v.value))
 
+    def setGamblingType(self, args):
+        self.checkDownloaded()
+        gtypes=(
+            "BOX",
+            "QUEST",
+            "DAILYBONUS",
+            "REWARDCONSUMABLE",
+            "SCRIPTEDEVENT",
+            "REWARDPRIZE",
+            "PROJECT",
+            "BAG")
+        gt = None
+        if (len(args) > 1):
+            gt = args[1]
+        if (gt not in gtypes):
+            gt = types[0]
+        self.mLandMessage.userData.gambleItemType = gt
+
     def nextInstanceIDSet(self, args):
         self.checkDownloaded()
         self.mLandMessage.innerLandData.nextInstanceID = int(args[1])
@@ -993,6 +1011,7 @@ cmdwarg = {
     "ic": tsto.inventoryCount,
     "qc": tsto.questComplete,
     "bm": tsto.buildingsMove,
+    "sgt": tsto.setGamblingType,
     "vars": tsto.varsPrint,
     "load": tsto.doFileOpen,
     "save": tsto.doFileSave,
