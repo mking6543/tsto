@@ -822,6 +822,10 @@ innerLandData.creationTime: %s""" % (
             if printAll == False and ns.count(v.name) == 0: continue
             print("%s=%s" % (v.name, v.value))
 
+    def nextInstanceIDSet(self, args):
+        self.checkDownloaded()
+        self.mLandMessage.innerLandData.nextInstanceID = int(args[1])
+
 ### Operations with files ###
 
     def doSaveAsText(self):
@@ -994,6 +998,7 @@ cmdwarg = {
     "save": tsto.doFileSave,
     "login": tsto.doAuth,
     "money": tsto.moneySet,
+    "sniid": tsto.nextInstanceIDSet,
     "setlevel": tsto.levelSet,
     "prizeset": tsto.nextPrizeSet,
     "spendable": tsto.spendableSet,
