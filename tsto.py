@@ -249,115 +249,6 @@ class TSTO:
             self.mLandMessageExtra = LandData_pb2.ExtraLandMessage()
         return self.mLandMessageExtra
 
-    def friendsTimChrSquish(self):
-        self.checkDownloaded()
-        se = self.getSpecialEvent(122000)
-        for timChar in se.timedCharacterDataSet.timedCharacterData:
-            if timChar.landOwner == self.mUid:
-                timChar.flag = 2
-
-    def friendsTimChrSpawn(self):
-        self.checkLogined()
-        self.checkDownloaded()
-
-        package = "THOH2015_Scripts"
-        script  = "SpawnFriendFormlessTerror_Act1"
-        eventType      = 11
-        spendableId    = 122009   # THOH2015Score
-        specialEventId = 122000   # THOH2015
-        charId         = 122001   # Formless Terror
-        lifeSpan       = 240 * 60 # 240 minutes
-
-        print("Please wait while spawning timed characters in friends towns...")
-
-        # [0] download friendsData before
-        friends = self.doDownloadFriendsData()
-
-        # [1] prepare EventMessage
-        em = LandData_pb2.EventMessage()
-        em.fromPlayerId = self.mUid
-        em.eventType    = str(eventType)
-        ed = em.eventData
-        ed.requestTime    = int(time.time())
-        ed.requestType    = eventType
-        ed.displayNameLen = 0
-        psd = ed.playScriptData
-        psd.playForFriend = True
-        psd.nameLen       = len(script)
-        psd.name          = script
-        psd.packageLen    = len(package)
-        psd.package       = package
-
-        # elm = self.getExtraLandMessage()
-
-        # and post it
-        spawns = dict()
-        for fd in friends.friendData:
-            # can we spawn characters in friend town?
-            found = False
-            for sp in fd.friendData.spendable:
-                if sp.type == spendableId:
-                    found = True
-                    break
-
-            # if not found - this user not participate in current event
-            if found == False:
-                continue
-
-            # add notifications
-            # pn = elm.pushNotification.add()
-            # pn.id = ""
-            # pn.toPlayerId   = fd.friendId
-            # pn.scheduledIn  = 100
-            # pn.templateName = "thesimpsonstappedout_push_thoh2015_formlessterrordeployed"
-            # pn.message      = "FRIEND=OLEG&custom_custom_sound=sfx_thoh_formless_terror_spawn_03.caf&custom_eamobile-song=sfx_thoh_formless_terror_spawn_03&custom_custom_locale=en"
-
-            # post events
-            em.toPlayerId = fd.friendId
-            packet = em.SerializeToString()
-            cnt    = 0
-            for i in range(0, 10):
-                data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
-                    , "/mh/games/bg_gameserver_plugin/event/%s/protoland/" % self.mUid
-                    , True
-                    , packet)
-#                if len(data) == 0 or 'error' in data:
-                    # <?xml version="1.0" encoding="UTF-8"?>
-                    # <error code="1" type="UNKNOWN_ERROR" severity="DEBUG"/>
-#                    break
-                cnt += 1
-            spawns[em.toPlayerId] = cnt
-
-        # [2] TODO: extraLandUpdate send notifications here
-        # self.doUploadExtraLandMessage()
-
-        # [3] now make changes in our LandMessage
-        totalSpawns = 0
-        se = self.getSpecialEvent(specialEventId)
-        se.updateTime = int(time.time())
-        for uid in spawns:
-            count = spawns[uid]
-            if count == 0: continue
-            totalSpawns += count
-            print ("%s %s" % (uid, count))
-            for i in range(0, count):
-                timChar = se.timedCharacterDataSet.timedCharacterData.add()
-                timChar.timedCharacterInstanceIDLen = 0
-                timChar.characterID = charId
-                timChar.subLandID = 1
-                timChar.characterOwnerLen = len(self.mUid)
-                timChar.characterOwner = self.mUid
-                timChar.landOwnerLen = len(uid)
-                timChar.landOwner = uid
-                timChar.timeCreated = int(time.time())
-                timChar.lifeSpan = lifeSpan
-                timChar.flag = 0
-
-        # [4] change event spendable
-        totalSpawns *= 10
-        print("+%s" % totalSpawns)
-        self.spendableAdd(('spendableadd', str(spendableId), totalSpawns))
-
     def doResetNotifications(self):
         data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
             , "/mh/games/bg_gameserver_plugin/event/%s/protoland/" % self.mUid, True)
@@ -1095,8 +986,6 @@ cmds = {
     "cleandebris": tsto.cleanDebris,
     "uploadextra": tsto.doUploadExtraLandMessage,
     "astextextra": tsto.doSaveExtraAsText,
-    "timchrspawn": tsto.friendsTimChrSpawn,
-    "timchrsquish": tsto.friendsTimChrSquish,
     "protocurrency": tsto.doLoadCurrency,
     "cleanpurchases": tsto.cleanPurchases,
 }
