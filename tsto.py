@@ -113,6 +113,24 @@ class TSTO:
         if self.mLandMessage.id == '':
             raise TypeError("ERR: LandMessage.id is empty!!!")
 
+    def doTokenDelete(self):
+        self.checkLogined()
+        dtr       = LandData_pb2.DeleteTokenRequest()
+        dtr.token = self.mUpdateToken
+        data      = dtr.SerializeToString()
+        data      = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
+                , "/mh/games/bg_gameserver_plugin/deleteToken/%s/protoWholeLandToken/" % (self.mUid), True, data)
+        dtr       = LandData_pb2.DeleteTokenResponse()
+        dtr.ParseFromString(data)
+        if dtr.result == False:
+            print("FAIL")
+        else:
+            self.mLandMessageExtra = None
+            self.mLandMessage      = LandData_pb2.LandMessage()
+            self.mLogined          = False
+            self.mPrompt           = "tsto > "
+            print("OK")
+
     def doAuth(self, args):
         email    = args[1]
         password = args[2]
@@ -1031,6 +1049,7 @@ cmds = {
     "quit": tsto.doQuit,
     "help": tsto.doHelp,
     "hurry": tsto.hurry,
+    "deltok": tsto.doTokenDelete,
     "upload": tsto.doLandUpload,
     "config": tsto.configShow,
     "quests": tsto.questsShow,
