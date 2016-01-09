@@ -118,7 +118,7 @@ class TSTO:
         dtr       = LandData_pb2.DeleteTokenRequest()
         dtr.token = self.mUpdateToken
         data      = dtr.SerializeToString()
-        data      = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
+        data      = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
                 , "/mh/games/bg_gameserver_plugin/deleteToken/%s/protoWholeLandToken/" % (self.mUid), True, data)
         dtr       = LandData_pb2.DeleteTokenResponse()
         dtr.ParseFromString(data)
@@ -991,6 +991,7 @@ config               - show current game config variables
 tokenstore           - store current logined token in home dir
 tokenforget          - remove stored encrypted token file
 tokenlogin           - login by token stored in file in home dir
+tokdel               - close current update token
 
 load filepath        - load LandMessage from local filepath
 save filepath        - save LandMessage to local filepath
@@ -1049,7 +1050,7 @@ cmds = {
     "quit": tsto.doQuit,
     "help": tsto.doHelp,
     "hurry": tsto.hurry,
-    "deltok": tsto.doTokenDelete,
+    "tokdel": tsto.doTokenDelete,
     "upload": tsto.doLandUpload,
     "config": tsto.configShow,
     "quests": tsto.questsShow,
