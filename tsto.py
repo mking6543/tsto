@@ -54,6 +54,7 @@ class TSTO:
         self.mSesSimpsons                  = requests.Session()
         self.mSesOther                     = requests.Session()
         self.mUid                          = None
+        self.mPrompt                       = "tsto > "
         self.tokenLoadDefault()
 
 ### Network ###
@@ -111,6 +112,24 @@ class TSTO:
     def checkDownloaded(self):
         if self.mLandMessage.id == '':
             raise TypeError("ERR: LandMessage.id is empty!!!")
+
+    def doTokenDelete(self):
+        self.checkLogined()
+        dtr       = LandData_pb2.DeleteTokenRequest()
+        dtr.token = self.mUpdateToken
+        data      = dtr.SerializeToString()
+        data      = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
+                , "/mh/games/bg_gameserver_plugin/deleteToken/%s/protoWholeLandToken/" % (self.mUid), True, data)
+        dtr       = LandData_pb2.DeleteTokenResponse()
+        dtr.ParseFromString(data)
+        if dtr.result == False:
+            print("FAIL")
+        else:
+            self.mLandMessageExtra = None
+            self.mLandMessage      = LandData_pb2.LandMessage()
+            self.mLogined          = False
+            self.mPrompt           = "tsto > "
+            print("OK")
 
     def doAuth(self, args):
         email    = args[1]
@@ -179,6 +198,7 @@ class TSTO:
                 , "/mh/games/bg_gameserver_plugin/protoland/%s/" % self.mUid, True)
         self.mLandMessage = LandData_pb2.LandMessage()
         self.mLandMessage.ParseFromString(data)
+        self.mPrompt = "%s@tsto > " % self.mLandMessage.friendData.name
         # make backup
         self.doFileSave(('save', "%s.%f" % (self.mUid, time.time())))
 
@@ -500,6 +520,40 @@ innerLandData.creationTime: %s""" % (
             sum += cur
         self.mLandMessage.innerLandData.nextCurrencyID = nextId
 
+    def colliderRecharge(self):
+        # get instance id
+        id = self.mLandMessage.innerLandData.nextInstanceID
+
+        # get list
+        dl = self.mLandMessage.userData.powerupDataList.powerupData
+
+        # clean powerupDataList items
+        for i in reversed(range(len(dl))):
+            del dl[i]
+
+        # timestamp
+        ts = int(time.time())
+
+        # create a new items
+        pd = dl.add()
+        pd.entityID      = id
+        pd.timeBeganMS   = ((ts + (24 * 60 * 60 * 19)) * 1000) + 953
+        pd.powerupTypeID = 5
+        pd.stateEnum     = 2
+
+        pd = dl.add()
+        pd.entityID      = id+1
+        pd.powerupTypeID = 5
+        pd.stateEnum     = 1
+
+        # set varibles
+        self.varChange(('vc', 'NewUserPowerUps_StartTime', ts))
+        ts = ts + (24 * 60 * 60 * 1);
+        self.varChange(('vc', 'NewUserPowerUps_ResurfaceTime', ts))
+
+        # save instance counter
+        self.mLandMessage.innerLandData.nextInstanceID = id + 2
+
     def arrSplit(self, arr):
         itms = []
         for it in arr.split(','):
@@ -806,6 +860,28 @@ innerLandData.creationTime: %s""" % (
             if printAll == False and ns.count(v.name) == 0: continue
             print("%s=%s" % (v.name, v.value))
 
+    def setGamblingType(self, args):
+        self.checkDownloaded()
+        gtypes=(
+            "BOX",
+            "QUEST",
+            "DAILYBONUS",
+            "REWARDCONSUMABLE",
+            "SCRIPTEDEVENT",
+            "REWARDPRIZE",
+            "PROJECT",
+            "BAG")
+        gt = None
+        if (len(args) > 1):
+            gt = args[1]
+        if (gt not in gtypes):
+            gt = types[0]
+        self.mLandMessage.userData.gambleItemType = gt
+
+    def nextInstanceIDSet(self, args):
+        self.checkDownloaded()
+        self.mLandMessage.innerLandData.nextInstanceID = int(args[1])
+
 ### Operations with files ###
 
     def doSaveAsText(self):
@@ -839,6 +915,7 @@ innerLandData.creationTime: %s""" % (
     def doFileOpen(self, args):
         self.mLandMessage = self.messageLoadFromFile(args[1], LandData_pb2.LandMessage())
         self.mUid = self.mLandMessage.id
+        self.mPrompt = "%s@tsto > " % self.mLandMessage.friendData.name
 
     def doFileSaveExtra(self, args):
         self.messageStoreToFile(args[1], self.mLandMessageExtra)
@@ -934,6 +1011,7 @@ config               - show current game config variables
 tokenstore           - store current logined token in home dir
 tokenforget          - remove stored encrypted token file
 tokenlogin           - login by token stored in file in home dir
+tokdel               - close current update token
 
 load filepath        - load LandMessage from local filepath
 save filepath        - save LandMessage to local filepath
@@ -973,11 +1051,13 @@ cmdwarg = {
     "ic": tsto.inventoryCount,
     "qc": tsto.questComplete,
     "bm": tsto.buildingsMove,
+    "sgt": tsto.setGamblingType,
     "vars": tsto.varsPrint,
     "load": tsto.doFileOpen,
     "save": tsto.doFileSave,
     "login": tsto.doAuth,
     "money": tsto.moneySet,
+    "sniid": tsto.nextInstanceIDSet,
     "donuts": tsto.donutsAdd,
     "setlevel": tsto.levelSet,
     "prizeset": tsto.nextPrizeSet,
@@ -992,6 +1072,7 @@ cmds = {
     "quit": tsto.doQuit,
     "help": tsto.doHelp,
     "hurry": tsto.hurry,
+    "tokdel": tsto.doTokenDelete,
     "upload": tsto.doLandUpload,
     "config": tsto.configShow,
     "quests": tsto.questsShow,
@@ -1002,6 +1083,7 @@ cmds = {
     "backups": tsto.backupsShow,
     "friends": tsto.friendsShow,
     "download": tsto.doLandDownload,
+    "recharge": tsto.colliderRecharge,
     "showtimes": tsto.showTimes,
     "resetnotif": tsto.doResetNotifications,
     "spendables": tsto.spendablesShow,
@@ -1017,7 +1099,7 @@ cmds = {
     "cleanpurchases": tsto.cleanPurchases,
 }
 while True :
-    args = raw_input("tsto > ").split()
+    args = raw_input(tsto.mPrompt).split()
     args_count = len(args)
     if args_count == 0:
         continue
