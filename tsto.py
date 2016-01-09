@@ -782,6 +782,8 @@ innerLandData.creationTime: %s""" % (
         self.mLandMessage.ClearField("processedPurchaseData")
         for i in reversed(range(len(self.mLandMessage.purchases))):
             del self.mLandMessage.purchases[i]
+        for i in reversed(range(len(self.mLandMessage.amazonDimensionSet))):
+            del self.mLandMessage.amazonDimensionSet[i]
         self.mLandMessage.userData.firstPurchase = False
 
     def cleanR(self):
