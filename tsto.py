@@ -39,7 +39,7 @@ class TSTO:
         self.dataVerison                   = int(VERSION_LAND)
         self.mLogined                      = False
         self.mLandMessage                  = LandData_pb2.LandMessage()
-        self.mExtraLandMessage             = None
+        self.mLandMessageExtra             = None
         self.headers                       = dict()
         self.headers["Accept"]             = "*/*"
         self.headers["Accept-Encoding"]    = "gzip"
@@ -236,18 +236,18 @@ class TSTO:
         return fdresp
 
     def doUploadExtraLandMessage(self):
-        msg = self.mExtraLandMessage
+        msg = self.mLandMessageExtra
         if msg == None:
             return
         data = msg.SerializeToString()
         data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
             , "/mh/games/bg_gameserver_plugin/extraLandUpdate/%s/protoland/" % self.mUid, True, data)
-        self.mExtraLandMessage = None
+        self.mLandMessageExtra = None
 
     def getExtraLandMessage(self):
-        if self.mExtraLandMessage == None:
-            self.mExtraLandMessage = LandData_pb2.ExtraLandMessage()
-        return self.mExtraLandMessage
+        if self.mLandMessageExtra == None:
+            self.mLandMessageExtra = LandData_pb2.ExtraLandMessage()
+        return self.mLandMessageExtra
 
     def friendsTimChrSquish(self):
         self.checkDownloaded()
