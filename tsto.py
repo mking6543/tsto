@@ -854,7 +854,7 @@ innerLandData.creationTime: %s""" % (
         print(files)
         if self.mUid not in files:
             raise TypeError("ERR: LandMessage file not found in save directory.")
-        fn = '%s%s' % (self.mUid, int(time.time()))
+        fn = '%s.%f' % (self.mUid, time.time())
         os.popen('adb pull "%s%s" %s'           % (ADB_SAVE_DIR, self.mUid, fn))
         os.popen('adb pull "%s%sExtra" %sExtra' % (ADB_SAVE_DIR, self.mUid, fn))
         self.doFileOpen(('load', fn))
@@ -867,7 +867,7 @@ innerLandData.creationTime: %s""" % (
         os.popen('adb shell "rm %s%sExtraB"' % (ADB_SAVE_DIR, self.mUid))
         os.popen('adb shell "rm %sLogMetricsSave"'  % (ADB_SAVE_DIR))
         os.popen('adb shell "rm %sLogMessagesSave"' % (ADB_SAVE_DIR))
-        fn = '%s%s' % (self.mUid, int(time.time()))
+        fn = '%s.%f' % (self.mUid, time.time())
         self.doFileSave(('save', fn))
         os.popen('adb push "%s" "%s%s"'           % (fn, ADB_SAVE_DIR, self.mUid))
         try:
