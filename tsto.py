@@ -665,8 +665,9 @@ innerLandData.creationTime: %s""" % (
     def nextPrizeSet(self, args):
         specialEventId = int(args[1])
         nextPrize = int(args[2])
+        index = int(args[3]) if (len(args) >= 4) else 0
         se = self.getSpecialEvent(specialEventId)
-        se.prizeDataSet.prizeData[0].nextPrize = nextPrize
+        se.prizeDataSet.prizeData[index].nextPrize = nextPrize
 
     def cleanPurchases(self):
         self.checkDownloaded()
