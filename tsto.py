@@ -252,6 +252,8 @@ class TSTO:
     def doResetNotifications(self):
         data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
             , "/mh/games/bg_gameserver_plugin/event/%s/protoland/" % self.mUid, True)
+        if len(data) == 0:
+            return
         events = LandData_pb2.EventsMessage()
         events.ParseFromString(data)
         if self.protobufParse(events, data) == False:
