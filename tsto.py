@@ -268,6 +268,7 @@ class TSTO:
             , "/mh/games/bg_gameserver_plugin/usernotificationstatus/?type=reset_count", True)
         data = self.doRequest("POST", CT_XML, URL_SIMPSONS
             , "/mh/games/bg_gameserver_plugin/usernotificationstatus/?type=reset_time", True)
+        print("TIP: don't forget execute upload or uploadextra")
 
     # show sorted friends list
 
@@ -410,6 +411,7 @@ innerLandData.creationTime: %s""" % (
             nextId += 1
             sum += cur
         self.mLandMessage.innerLandData.nextCurrencyID = nextId
+        print("TIP: don't forget execute upload or uploadextra")
 
     def colliderRecharge(self):
         # get instance id
