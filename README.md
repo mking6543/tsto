@@ -1,8 +1,7 @@
 The Simpsons Tapped Out tool
 ====
 
-Installation
-
+Installation (or if you're Windows user see release section to download latest executable):
 - install Python;
 - install Google protobuf library for Python (using pip for example);
 - install Requests Python library (using pip for example).
@@ -63,3 +62,7 @@ Add 1000 donuts to your account email@host.com:
     quit
 
 The script has a lot of things to do; just execute 'help' command and examine it output.
+
+DONATE
+
+I accept PayPal donations (jsbot@ya.ru). Thank you.
