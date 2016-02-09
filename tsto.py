@@ -938,8 +938,8 @@ cleandebris          - clean debris in subland 1 and 2
 help                 - this message
 quit                 - exit""")
 
-if __name__ == '__main__':
-    exit
+if __name__ != '__main__':
+     sys.exit(0)
 tsto = TSTO()
 cmdwarg = {
     "sa": tsto.skinsAdd,
