@@ -65,4 +65,5 @@ The script has a lot of things to do; just execute 'help' command and examine it
 
 DONATE
 
-I accept PayPal donations (jsbot@ya.ru). Thank you.
+If you want to help this project please send your PayPal donations to jsbot@ya.ru
+Thank you.
