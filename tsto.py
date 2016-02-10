@@ -780,6 +780,9 @@ innerLandData.creationTime: %s""" % (
         self.checkDownloaded()
         self.mLandMessage.innerLandData.nextInstanceID = int(args[1])
 
+    def showId(self):
+        print("%s" % self.mLandMessage.id)
+
 ### Operations with files ###
 
     def doSaveAsText(self):
@@ -967,6 +970,7 @@ cmdwarg = {
     "spendableadd": tsto.spendableAdd,
 }
 cmds = {
+    "id": tsto.showId,
     "quit": tsto.doQuit,
     "help": tsto.doHelp,
     "hurry": tsto.hurry,
