@@ -683,20 +683,27 @@ innerLandData.creationTime: %s""" % (
         self.mLandMessage.userData.firstPurchase = False
 
     def cleanR(self):
+        oX = 16
+        oY = 13
+        maxX = 32
+        maxY = 32
         data=''
-        for i in range(16 * 13):
-            data += '1'
-        for i in range(16 *  3):
+        for row in range(oY):
+            for col in range(oX):
+                data += '1'
+            for col in range(maxX - oX):
+                data += '0'
+        for i in range(maxY * (maxY - oY)):
             data += '0'
 
         self.mLandMessage.friendData.dataVersion = self.dataVerison
         self.mLandMessage.innerLandData.landBlocks = data
         self.mLandMessage.friendData.boardwalkTileCount = 0
-        self.mLandMessage.innerLandData.landBlockWidth  = 16
-        self.mLandMessage.innerLandData.landBlockHeight = 16
+        self.mLandMessage.innerLandData.landBlockWidth  = maxX
+        self.mLandMessage.innerLandData.landBlockHeight = maxY
 
         data=''
-        for i in range(14 * 13 * 16):
+        for i in range((oX-2) * oY * 16):
             data += 'G'
 
         self.mLandMessage.roadsData.mapDataSize = len(data)
@@ -705,7 +712,7 @@ innerLandData.creationTime: %s""" % (
         self.mLandMessage.riversData.mapData = data
 
         data=''
-        for i in range(2 * 13 * 16):
+        for i in range(2 * oY * 16):
             data += 'G'
 
         self.mLandMessage.oceanData.mapDataSize = len(data)
