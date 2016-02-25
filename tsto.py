@@ -17,7 +17,7 @@ import struct
 import sys
 import traceback
 import random
-import LandData_pb2
+import ld_pb2
 import os.path
 from stat import S_ISREG, ST_CTIME, ST_MODE
 
@@ -30,15 +30,15 @@ CT_PROTOBUF  = 'application/x-protobuf'
 CT_JSON      = 'application/json'
 CT_XML       = 'application/xaml+xml'
 ADB_SAVE_DIR = '/sdcard/Android/data/com.ea.game.simpsons4_row/files/save/'
-VERSION_APP  = '4.18.2'
-VERSION_LAND = '34'
+VERSION_APP  = '4.18.6'
+VERSION_LAND = '35'
 
 class TSTO:
     def __init__(self):
         logging.basicConfig(level=logging.DEBUG)
         self.dataVerison                   = int(VERSION_LAND)
         self.mLogined                      = False
-        self.mLandMessage                  = LandData_pb2.LandMessage()
+        self.mLandMessage                  = ld_pb2.LandMessage()
         self.mLandMessageExtra             = None
         self.headers                       = dict()
         self.headers["Accept"]             = "*/*"
@@ -115,18 +115,18 @@ class TSTO:
 
     def doTokenDelete(self):
         self.checkLogined()
-        dtr       = LandData_pb2.DeleteTokenRequest()
+        dtr       = ld_pb2.DeleteTokenRequest()
         dtr.token = self.mUpdateToken
         data      = dtr.SerializeToString()
         data      = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
                 , "/mh/games/bg_gameserver_plugin/deleteToken/%s/protoWholeLandToken/" % (self.mUid), True, data)
-        dtr       = LandData_pb2.DeleteTokenResponse()
+        dtr       = ld_pb2.DeleteTokenResponse()
         dtr.ParseFromString(data)
         if dtr.result == False:
             print("FAIL")
         else:
             self.mLandMessageExtra = None
-            self.mLandMessage      = LandData_pb2.LandMessage()
+            self.mLandMessage      = ld_pb2.LandMessage()
             self.mLogined          = False
             self.mPrompt           = "tsto > "
             print("OK")
@@ -168,7 +168,7 @@ class TSTO:
 
         data = self.doRequest("PUT", CT_PROTOBUF, URL_SIMPSONS
             , "/mh/users?appVer=2.2.0&appLang=en&application=tnt&applicationUserId=%s" % self.mTntId, True)
-        urm  = LandData_pb2.UsersResponseMessage()
+        urm  = ld_pb2.UsersResponseMessage()
         urm.ParseFromString(data)
         self.mUid     = urm.user.userId
         self.mSession = urm.token.sessionKey
@@ -177,14 +177,14 @@ class TSTO:
 
         data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
                 , "/mh/games/bg_gameserver_plugin/checkToken/%s/protoWholeLandToken/" % (self.mUid), True)
-        wltr = LandData_pb2.WholeLandTokenRequest()
+        wltr = ld_pb2.WholeLandTokenRequest()
         if self.protobufParse(wltr, data) == False:
-            wltr = LandData_pb2.WholeLandTokenRequest()
+            wltr = ld_pb2.WholeLandTokenRequest()
             wltr.requestId = self.mTntId
             data = wltr.SerializeToString()
             data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
                 , "/mh/games/bg_gameserver_plugin/protoWholeLandToken/%s/" % self.mUid, True, data)
-            wltr = LandData_pb2.WholeLandTokenRequest()
+            wltr = ld_pb2.WholeLandTokenRequest()
             wltr.ParseFromString(data)
         self.mUpdateToken = wltr.requestId
         self.headers["target_land_id"]    = self.mUid
@@ -196,7 +196,7 @@ class TSTO:
         self.checkLogined()
         data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
                 , "/mh/games/bg_gameserver_plugin/protoland/%s/" % self.mUid, True)
-        self.mLandMessage = LandData_pb2.LandMessage()
+        self.mLandMessage = ld_pb2.LandMessage()
         self.mLandMessage.ParseFromString(data)
         self.mPrompt = "%s@tsto > " % self.mLandMessage.friendData.name
         # make backup
@@ -223,7 +223,7 @@ class TSTO:
         self.checkLogined()
         data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
                 , "/mh/games/bg_gameserver_plugin/protocurrency/%s/" % self.mUid, True)
-        currdat = LandData_pb2.CurrencyData()
+        currdat = ld_pb2.CurrencyData()
         currdat.ParseFromString(data)
         print(str(currdat))
         return currdat
@@ -231,7 +231,7 @@ class TSTO:
     def doDownloadFriendsData(self):
         data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
             , "/mh/games/bg_gameserver_plugin/friendData?debug_mayhem_id=%s" % self.mUid, True)
-        fdresp = LandData_pb2.GetFriendDataResponse()
+        fdresp = ld_pb2.GetFriendDataResponse()
         fdresp.ParseFromString(data)
         return fdresp
 
@@ -246,7 +246,7 @@ class TSTO:
 
     def getExtraLandMessage(self):
         if self.mLandMessageExtra == None:
-            self.mLandMessageExtra = LandData_pb2.ExtraLandMessage()
+            self.mLandMessageExtra = ld_pb2.ExtraLandMessage()
         return self.mLandMessageExtra
 
     def doResetNotifications(self):
@@ -254,7 +254,7 @@ class TSTO:
             , "/mh/games/bg_gameserver_plugin/event/%s/protoland/" % self.mUid, True)
         if len(data) == 0:
             return
-        events = LandData_pb2.EventsMessage()
+        events = ld_pb2.EventsMessage()
         events.ParseFromString(data)
         if self.protobufParse(events, data) == False:
             return
@@ -568,12 +568,12 @@ innerLandData.creationTime: %s""" % (
         data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
             , "/mh/games/bg_gameserver_plugin/protoClientConfig"
               "/?id=ca0ddfef-a2c4-4a57-8021-27013137382e", True)
-        cliConf = LandData_pb2.ClientConfigResponse()
+        cliConf = ld_pb2.ClientConfigResponse()
         cliConf.ParseFromString(data)
 
         data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
             , "/mh/gameplayconfig", True)
-        gameConf = LandData_pb2.GameplayConfigResponse()
+        gameConf = ld_pb2.GameplayConfigResponse()
         gameConf.ParseFromString(data)
 
         print("[protoClientConfig]")
@@ -821,7 +821,7 @@ innerLandData.creationTime: %s""" % (
         self.messageStoreToFile(args[1], self.mLandMessage)
 
     def doFileOpen(self, args):
-        self.mLandMessage = self.messageLoadFromFile(args[1], LandData_pb2.LandMessage())
+        self.mLandMessage = self.messageLoadFromFile(args[1], ld_pb2.LandMessage())
         self.mUid = self.mLandMessage.id
         self.mPrompt = "%s@tsto > " % self.mLandMessage.friendData.name
 
@@ -829,7 +829,7 @@ innerLandData.creationTime: %s""" % (
         self.messageStoreToFile(args[1], self.mLandMessageExtra)
 
     def doFileOpenExtra(self, args):
-        self.mLandMessageExtra = self.messageLoadFromFile(args[1], LandData_pb2.ExtraLandMessage())
+        self.mLandMessageExtra = self.messageLoadFromFile(args[1], ld_pb2.ExtraLandMessage())
 
     def tokenPath(self):
         return os.path.join(os.path.expanduser('~'), '.tsto.conf')
