@@ -5,11 +5,13 @@ DONATE
 
 If you want to help this project please send your PayPal donations to jsbot@ya.ru
 
+====
+
 Installation (or if you're Windows user see release section to download latest executable):
 
 - install Python;
-- install Google protobuf library for Python (using pip for example);
-- install Requests Python library (using pip for example).
+- install Google protobuf library for Python (pip install protobuf);
+- install Requests Python library (pip install requests).
 
 Usage examples
 
