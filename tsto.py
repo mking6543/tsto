@@ -7,6 +7,7 @@ WARNING: absolutly no warranties. Use this script at own risk.
 
 __author__ = 'jsbot@ya.ru (Oleg Polivets)'
 
+import argparse
 import logging
 import requests
 import json
@@ -21,6 +22,7 @@ import ld_pb2
 import os.path
 from stat import S_ISREG, ST_CTIME, ST_MODE
 
+DESCRIPTION  = 'The Simpsons Tapped Out tool'
 URL_SIMPSONS = 'prod.simpsons-ea.com'
 URL_OFRIENDS = 'm.friends.dm.origin.com'
 URL_AVATAR   = 'm.avatar.dm.origin.com'
@@ -1005,20 +1007,43 @@ cmds = {
     "protocurrency": tsto.doLoadCurrency,
     "cleanpurchases": tsto.cleanPurchases,
 }
-while True :
-    args = raw_input(tsto.mPrompt).split()
-    args_count = len(args)
-    if args_count == 0:
-        continue
-    try:
-        func = cmds.get(args[0])
-        if func is not None:
-            func()
-        else:
-            func = cmdwarg.get(args[0])
-            if func is not None:
-                func(args)
-        if func is None:
-            print("ERR: unknown command '%s'.\nMaybe you should try 'help'." % (args[0]))
-    except Exception as e:
-        print(traceback.print_exc())
+
+try:
+    if len(sys.argv) == 1:
+        # console interface
+        while True :
+            args = raw_input(tsto.mPrompt).split()
+            args_count = len(args)
+            if args_count == 0:
+                continue
+            func = cmds.get(args[0])
+            if func is not None: func()
+            else:
+                func = cmdwarg.get(args[0])
+                if func is not None: func(args)
+            if func is None:
+                print("ERR: unknown command '%s'.\nMaybe you should try 'help'." % (args[0]))
+    else:
+        # command line interface using argparse module (thanks @oskgeek)
+        class CustomAction(argparse.Action):
+            def __call__(self, parser, namespace, values, option_string=None):
+                if not 'ordered_args' in namespace:
+                    setattr(namespace, 'ordered_args', [])
+                previous = namespace.ordered_args
+                previous.append((self.dest, values))
+                setattr(namespace, 'ordered_args', previous)
+        parser = argparse.ArgumentParser(description=DESCRIPTION, add_help=False)
+        for command_name in cmds.keys():
+            parser.add_argument("--%s" % command_name, nargs=0, action=CustomAction)
+        for command_name in cmdwarg.keys():
+            parser.add_argument("--%s" % command_name, nargs='+', action=CustomAction)
+        args = parser.parse_args()
+        for arguments in args.ordered_args:
+            command, values = arguments
+            if len(values) == 0:
+                cmds.get(command)()
+            else:
+                values.insert(0, command)
+                cmdwarg.get(command)(values)
+except Exception as e:
+    print(traceback.print_exc())
