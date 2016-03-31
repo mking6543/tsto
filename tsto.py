@@ -22,41 +22,43 @@ import ld_pb2
 import os.path
 from stat import S_ISREG, ST_CTIME, ST_MODE
 
-DESCRIPTION  = 'The Simpsons Tapped Out tool'
+DESCRIPTION = 'The Simpsons Tapped Out tool'
 URL_SIMPSONS = 'prod.simpsons-ea.com'
 URL_OFRIENDS = 'm.friends.dm.origin.com'
-URL_AVATAR   = 'm.avatar.dm.origin.com'
-URL_TNTAUTH  = 'auth.tnt-ea.com'
+URL_AVATAR = 'm.avatar.dm.origin.com'
+URL_TNTAUTH = 'auth.tnt-ea.com'
 URL_TNTNUCLEUS = 'nucleus.tnt-ea.com'
-CT_PROTOBUF  = 'application/x-protobuf'
-CT_JSON      = 'application/json'
-CT_XML       = 'application/xaml+xml'
+CT_PROTOBUF = 'application/x-protobuf'
+CT_JSON = 'application/json'
+CT_XML = 'application/xaml+xml'
 ADB_SAVE_DIR = '/sdcard/Android/data/com.ea.game.simpsons4_row/files/save/'
-VERSION_APP  = '4.18.6'
+VERSION_APP = '4.18.6'
 VERSION_LAND = '35'
 
+
 class TSTO:
+
     def __init__(self):
         logging.basicConfig(level=logging.DEBUG)
-        self.dataVerison                   = int(VERSION_LAND)
-        self.mLogined                      = False
-        self.mLandMessage                  = ld_pb2.LandMessage()
-        self.mLandMessageExtra             = None
-        self.headers                       = dict()
-        self.headers["Accept"]             = "*/*"
-        self.headers["Accept-Encoding"]    = "gzip"
-        self.headers["client_version"]     = VERSION_APP
+        self.dataVerison = int(VERSION_LAND)
+        self.mLogined = False
+        self.mLandMessage = ld_pb2.LandMessage()
+        self.mLandMessageExtra = None
+        self.headers = dict()
+        self.headers["Accept"] = "*/*"
+        self.headers["Accept-Encoding"] = "gzip"
+        self.headers["client_version"] = VERSION_APP
         self.headers["server_api_version"] = "4.0.0"
-        self.headers["EA-SELL-ID"]         = "857120"
-        self.headers["platform"]           = "android"
-        self.headers["os_version"]         = "15.0.0"
-        self.headers["hw_model_id"]        = "0 0.0"
-        self.headers["data_param_1"]       = "2633815347"
-        self.mMhClientVersion              = "Android." + VERSION_APP
-        self.mSesSimpsons                  = requests.Session()
-        self.mSesOther                     = requests.Session()
-        self.mUid                          = None
-        self.mPrompt                       = "tsto > "
+        self.headers["EA-SELL-ID"] = "857120"
+        self.headers["platform"] = "android"
+        self.headers["os_version"] = "15.0.0"
+        self.headers["hw_model_id"] = "0 0.0"
+        self.headers["data_param_1"] = "2633815347"
+        self.mMhClientVersion = "Android." + VERSION_APP
+        self.mSesSimpsons = requests.Session()
+        self.mSesOther = requests.Session()
+        self.mUid = None
+        self.mPrompt = "tsto > "
         self.tokenLoadDefault()
 
 ### Network ###
@@ -67,9 +69,9 @@ class TSTO:
         # filling headers for this request
         headers = self.headers.copy()
         if uncomressedLen > -1:
-            headers["Content-Encoding"]    = "gzip"
+            headers["Content-Encoding"] = "gzip"
             headers["Uncompressed-Length"] = uncomressedLen
-            headers["Content-Length"]      = len(body)
+            headers["Content-Length"] = len(body)
 
         if keep_alive == True:
             headers["Connection"] = "Keep-Alive"
@@ -117,38 +119,38 @@ class TSTO:
 
     def doTokenDelete(self):
         self.checkLogined()
-        dtr       = ld_pb2.DeleteTokenRequest()
+        dtr = ld_pb2.DeleteTokenRequest()
         dtr.token = self.mUpdateToken
-        data      = dtr.SerializeToString()
-        data      = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
-                , "/mh/games/bg_gameserver_plugin/deleteToken/%s/protoWholeLandToken/" % (self.mUid), True, data)
-        dtr       = ld_pb2.DeleteTokenResponse()
+        data = dtr.SerializeToString()
+        data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/deleteToken/%s/protoWholeLandToken/" % (self.mUid), True, data)
+        dtr = ld_pb2.DeleteTokenResponse()
         dtr.ParseFromString(data)
         if dtr.result == False:
             print("FAIL")
         else:
             self.mLandMessageExtra = None
-            self.mLandMessage      = ld_pb2.LandMessage()
-            self.mLogined          = False
-            self.mPrompt           = "tsto > "
+            self.mLandMessage = ld_pb2.LandMessage()
+            self.mLogined = False
+            self.mPrompt = "tsto > "
             print("OK")
 
     def doAuth(self, args):
-        email    = args[1]
+        email = args[1]
         password = args[2]
-        data = self.doRequest("POST", CT_JSON, URL_TNTNUCLEUS
-            , "/rest/token/%s/%s/" % (email, password), True)
+        data = self.doRequest("POST", CT_JSON, URL_TNTNUCLEUS,
+                              "/rest/token/%s/%s/" % (email, password), True)
         data = json.JSONDecoder().decode(data)
-        self.mUserId    = data["userId"]
+        self.mUserId = data["userId"]
         self.mEncrToken = data["encryptedToken"]
         self.doAuthWithToken(data["token"])
         self.tokenStore()
 
     def doAuthWithCryptedToken(self, cryptedToken):
-        data = self.doRequest("POST", CT_JSON, URL_TNTNUCLEUS
-            , "/rest/token/validate", True, self.mToken)
-        data = self.doRequest("POST", CT_JSON, URL_TNTNUCLEUS
-            , "/rest/token/%s/" % (cryptedToken), True)
+        data = self.doRequest("POST", CT_JSON, URL_TNTNUCLEUS,
+                              "/rest/token/validate", True, self.mToken)
+        data = self.doRequest("POST", CT_JSON, URL_TNTNUCLEUS,
+                              "/rest/token/%s/" % (cryptedToken), True)
         data = json.JSONDecoder().decode(data)
         self.mUserId = data["userId"]
         self.mEncrToken = data["encryptedToken"]
@@ -159,45 +161,45 @@ class TSTO:
         self.headers["nucleus_token"] = token
         self.headers["AuthToken"] = token
 
-        data = self.doRequest("GET", CT_JSON, URL_TNTAUTH
-            , "/rest/oauth/origin/%s/Simpsons-Tapped-Out/" % self.mToken, True)
+        data = self.doRequest("GET", CT_JSON, URL_TNTAUTH,
+                              "/rest/oauth/origin/%s/Simpsons-Tapped-Out/" % self.mToken, True)
         data = json.JSONDecoder().decode(data)
-        self.mCode  = data["code"]
+        self.mCode = data["code"]
         self.mTntId = data["tntId"]
-        self.headers["mh_auth_method"]    = "tnt"
-        self.headers["mh_auth_params"]    = data["code"]
+        self.headers["mh_auth_method"] = "tnt"
+        self.headers["mh_auth_params"] = data["code"]
         self.headers["mh_client_version"] = self.mMhClientVersion
 
-        data = self.doRequest("PUT", CT_PROTOBUF, URL_SIMPSONS
-            , "/mh/users?appVer=2.2.0&appLang=en&application=tnt&applicationUserId=%s" % self.mTntId, True)
-        urm  = ld_pb2.UsersResponseMessage()
+        data = self.doRequest("PUT", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/users?appVer=2.2.0&appLang=en&application=tnt&applicationUserId=%s" % self.mTntId, True)
+        urm = ld_pb2.UsersResponseMessage()
         urm.ParseFromString(data)
-        self.mUid     = urm.user.userId
+        self.mUid = urm.user.userId
         self.mSession = urm.token.sessionKey
-        self.headers["mh_uid"]         = self.mUid
+        self.headers["mh_uid"] = self.mUid
         self.headers["mh_session_key"] = self.mSession
 
-        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
-                , "/mh/games/bg_gameserver_plugin/checkToken/%s/protoWholeLandToken/" % (self.mUid), True)
+        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/checkToken/%s/protoWholeLandToken/" % (self.mUid), True)
         wltr = ld_pb2.WholeLandTokenRequest()
         if self.protobufParse(wltr, data) == False:
             wltr = ld_pb2.WholeLandTokenRequest()
             wltr.requestId = self.mTntId
             data = wltr.SerializeToString()
-            data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
-                , "/mh/games/bg_gameserver_plugin/protoWholeLandToken/%s/" % self.mUid, True, data)
+            data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS,
+                                  "/mh/games/bg_gameserver_plugin/protoWholeLandToken/%s/" % self.mUid, True, data)
             wltr = ld_pb2.WholeLandTokenRequest()
             wltr.ParseFromString(data)
         self.mUpdateToken = wltr.requestId
-        self.headers["target_land_id"]    = self.mUid
+        self.headers["target_land_id"] = self.mUid
         self.headers["land-update-token"] = self.mUpdateToken
         self.mLogined = True
         print("OK")
 
     def doLandDownload(self):
         self.checkLogined()
-        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
-                , "/mh/games/bg_gameserver_plugin/protoland/%s/" % self.mUid, True)
+        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/protoland/%s/" % self.mUid, True)
         self.mLandMessage = ld_pb2.LandMessage()
         self.mLandMessage.ParseFromString(data)
         self.mPrompt = "%s@tsto > " % self.mLandMessage.friendData.name
@@ -214,25 +216,25 @@ class TSTO:
         data = self.mLandMessage.SerializeToString()
         uncomressedLen = len(data)
         out = StringIO.StringIO()
-        g=gzip.GzipFile(fileobj=out, mode="w")
+        g = gzip.GzipFile(fileobj=out, mode="w")
         g.write(data)
         g.close()
         data = out.getvalue()
-        data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
-            , "/mh/games/bg_gameserver_plugin/protoland/%s/" % self.mUid, True, data, uncomressedLen)
+        data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/protoland/%s/" % self.mUid, True, data, uncomressedLen)
 
     def doLoadCurrency(self):
         self.checkLogined()
-        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
-                , "/mh/games/bg_gameserver_plugin/protocurrency/%s/" % self.mUid, True)
+        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/protocurrency/%s/" % self.mUid, True)
         currdat = ld_pb2.CurrencyData()
         currdat.ParseFromString(data)
         print(str(currdat))
         return currdat
 
     def doDownloadFriendsData(self):
-        data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
-            , "/mh/games/bg_gameserver_plugin/friendData?debug_mayhem_id=%s" % self.mUid, True)
+        data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/friendData?debug_mayhem_id=%s" % self.mUid, True)
         fdresp = ld_pb2.GetFriendDataResponse()
         fdresp.ParseFromString(data)
         return fdresp
@@ -242,8 +244,8 @@ class TSTO:
         if msg == None:
             return
         data = msg.SerializeToString()
-        data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS
-            , "/mh/games/bg_gameserver_plugin/extraLandUpdate/%s/protoland/" % self.mUid, True, data)
+        data = self.doRequest("POST", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/extraLandUpdate/%s/protoland/" % self.mUid, True, data)
         self.mLandMessageExtra = None
 
     def getExtraLandMessage(self):
@@ -252,8 +254,8 @@ class TSTO:
         return self.mLandMessageExtra
 
     def doResetNotifications(self):
-        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
-            , "/mh/games/bg_gameserver_plugin/event/%s/protoland/" % self.mUid, True)
+        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/event/%s/protoland/" % self.mUid, True)
         if len(data) == 0:
             return
         events = ld_pb2.EventsMessage()
@@ -264,14 +266,14 @@ class TSTO:
         alreadyDone = set()
         for ev in events.event:
             if ev.id in alreadyDone:
-                continue 
+                continue
             xev = extra.event.add()
             xev.id = ev.id
             alreadyDone.add(ev.id)
-        data = self.doRequest("POST", CT_XML, URL_SIMPSONS
-            , "/mh/games/bg_gameserver_plugin/usernotificationstatus/?type=reset_count", True)
-        data = self.doRequest("POST", CT_XML, URL_SIMPSONS
-            , "/mh/games/bg_gameserver_plugin/usernotificationstatus/?type=reset_time", True)
+        data = self.doRequest("POST", CT_XML, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/usernotificationstatus/?type=reset_count", True)
+        data = self.doRequest("POST", CT_XML, URL_SIMPSONS,
+                              "/mh/games/bg_gameserver_plugin/usernotificationstatus/?type=reset_time", True)
         print("TIP: don't forget execute upload or uploadextra")
 
     # show sorted friends list
@@ -321,10 +323,11 @@ class TSTO:
             raise TypeError("ERR: not found friendIdx.")
 
         # delete
-        self.doRequest("GET", CT_JSON, URL_OFRIENDS
-            , "/friends/deleteFriend?nucleusId=%s&friendId=%s" % (self.mUserId, friendOriginId))
+        self.doRequest("GET", CT_JSON, URL_OFRIENDS,
+                       "/friends/deleteFriend?nucleusId=%s&friendId=%s" % (self.mUserId, friendOriginId))
         del self.mLandMessage.friendListData[friendIdx]
-        self.mLandMessage.innerLandData.numSavedFriends = len(self.mLandMessage.friendListData)
+        self.mLandMessage.innerLandData.numSavedFriends = len(
+            self.mLandMessage.friendListData)
 
     # drop friends that not playing more given days
 
@@ -348,10 +351,10 @@ class TSTO:
 #        self.doRequest("GET", CT_JSON, URL_OFRIENDS
 #            , "//friends/user/%s/globalgroup/friendIds" % (self.mUserId)
 #            , True)
-        
+
         # find what don't need to delete
-        notDel=[]
-        delAll=False 
+        notDel = []
+        delAll = False
         for fd in friends.friendData:
             f = fd.friendData
             if (ts - f.lastPlayedTime) < crit:
@@ -368,11 +371,10 @@ class TSTO:
                 inp = raw_input("Drop this friend (Y/N/A) ").lower()
                 delAll = (inp == 'a')
             if delAll or inp == 'y':
-                self.doRequest("GET", CT_JSON, URL_OFRIENDS
-                    , "/friends/deleteFriend?nucleusId=%s&friendId=%s" % (self.mUserId, fd.externalId)
-                    , True)
+                self.doRequest("GET", CT_JSON, URL_OFRIENDS, "/friends/deleteFriend?nucleusId=%s&friendId=%s" %
+                               (self.mUserId, fd.externalId), True)
         # get indexes for deletion
-        forDel=[]
+        forDel = []
         for i in range(len(self.mLandMessage.friendListData)):
             f = self.mLandMessage.friendListData[i]
             if f.friendID not in notDel:
@@ -380,14 +382,15 @@ class TSTO:
         # delete by indexes
         for i in forDel:
             del self.mLandMessage.friendListData[i]
-        self.mLandMessage.innerLandData.numSavedFriends = len(self.mLandMessage.friendListData)
+        self.mLandMessage.innerLandData.numSavedFriends = len(
+            self.mLandMessage.friendListData)
 
     # show some date/time info for this land
 
     def showTimes(self):
         tm = time.gmtime(self.mLandMessage.innerLandData.timeSpentPlaying)
         timeSpentPlaying = "%d year(s) %d month(s) %d days %d h %d m" % (1970 - tm.tm_year,
-            tm.tm_mon - 1, tm.tm_mday, tm.tm_hour, tm.tm_min)
+                                                                         tm.tm_mon - 1, tm.tm_mday, tm.tm_hour, tm.tm_min)
         print("""friendData.lastPlayedTime: %s
 userData.lastBonusCollection: %s
 innerLandData.timeSpentPlaying: %s
@@ -433,19 +436,19 @@ innerLandData.creationTime: %s""" % (
 
         # create a new items
         pd = dl.add()
-        pd.entityID      = id
-        pd.timeBeganMS   = ((ts + (24 * 60 * 60 * 19)) * 1000) + 953
+        pd.entityID = id
+        pd.timeBeganMS = ((ts + (24 * 60 * 60 * 19)) * 1000) + 953
         pd.powerupTypeID = 5
-        pd.stateEnum     = 2
+        pd.stateEnum = 2
 
         pd = dl.add()
-        pd.entityID      = id+1
+        pd.entityID = id + 1
         pd.powerupTypeID = 5
-        pd.stateEnum     = 1
+        pd.stateEnum = 1
 
         # set varibles
         self.varChange(('vc', 'NewUserPowerUps_StartTime', ts))
-        ts = ts + (24 * 60 * 60 * 1);
+        ts = ts + (24 * 60 * 60 * 1)
         self.varChange(('vc', 'NewUserPowerUps_ResurfaceTime', ts))
 
         # save instance counter
@@ -456,7 +459,7 @@ innerLandData.creationTime: %s""" % (
         for it in arr.split(','):
             tt = it.split('-')
             if (len(tt) >= 2 and int(tt[0]) < int(tt[1])):
-                for i in range(int(tt[0]), int(tt[1])+1):
+                for i in range(int(tt[0]), int(tt[1]) + 1):
                     itms.append(i)
             else:
                 itms.append(int(tt[0]))
@@ -491,17 +494,18 @@ innerLandData.creationTime: %s""" % (
             t.header.id = self.mLandMessage.innerLandData.nextInstanceID
             t.itemID = it
             t.itemType = itemtype
-            t.count  = count
+            t.count = count
             t.isOwnerList = False
             t.fromLand = 0
             t.sourceLen = 0
-            self.mLandMessage.innerLandData.nextInstanceID    = t.header.id + 1
-            self.mLandMessage.innerLandData.numInventoryItems = len(self.mLandMessage.inventoryItemData)
+            self.mLandMessage.innerLandData.nextInstanceID = t.header.id + 1
+            self.mLandMessage.innerLandData.numInventoryItems = len(
+                self.mLandMessage.inventoryItemData)
 
     def inventoryCount(self, args):
-        itemid   = int(args[1])
+        itemid = int(args[1])
         itemtype = int(args[2])
-        count    = int(args[3])
+        count = int(args[3])
         it = -1
         for i in range(len(self.mLandMessage.inventoryItemData)):
             item = self.mLandMessage.inventoryItemData[i]
@@ -511,7 +515,8 @@ innerLandData.creationTime: %s""" % (
         if count <= 0:
             if it != -1:
                 del self.mLandMessage.inventoryItemData[it]
-                self.mLandMessage.innerLandData.numInventoryItems = len(self.mLandMessage.inventoryItemData)
+                self.mLandMessage.innerLandData.numInventoryItems = len(
+                    self.mLandMessage.inventoryItemData)
         else:
             if it != -1:
                 self.mLandMessage.inventoryItemData[it].count = count
@@ -529,8 +534,8 @@ innerLandData.creationTime: %s""" % (
             print("%d=%d" % (sp.type, sp.amount))
 
     def spendableSet(self, args):
-        amount   = int(args[2])
-        types    = self.arrSplit(args[1])
+        amount = int(args[2])
+        types = self.arrSplit(args[1])
         notExist = types[:]
         # set amount for exists spendables and
         for sp in self.mLandMessage.spendablesData.spendable:
@@ -543,12 +548,12 @@ innerLandData.creationTime: %s""" % (
         # create not exists spendables
         for sp in notExist:
             sd = self.mLandMessage.spendablesData.spendable.add()
-            sd.type   = int(sp)
+            sd.type = int(sp)
             sd.amount = amount
 
     def spendableAdd(self, args):
-        amount   = int(args[2])
-        types    = self.arrSplit(args[1])
+        amount = int(args[2])
+        types = self.arrSplit(args[1])
         notExist = types[:]
         # set amount for exists spendables and
         for sp in self.mLandMessage.spendablesData.spendable:
@@ -563,18 +568,17 @@ innerLandData.creationTime: %s""" % (
         # create not exists spendables
         for sp in notExist:
             sd = self.mLandMessage.spendablesData.spendable.add()
-            sd.type   = int(sp)
+            sd.type = int(sp)
             sd.amount = amount
 
     def configShow(self):
-        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
-            , "/mh/games/bg_gameserver_plugin/protoClientConfig"
-              "/?id=ca0ddfef-a2c4-4a57-8021-27013137382e", True)
+        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS, "/mh/games/bg_gameserver_plugin/protoClientConfig"
+                              "/?id=ca0ddfef-a2c4-4a57-8021-27013137382e", True)
         cliConf = ld_pb2.ClientConfigResponse()
         cliConf.ParseFromString(data)
 
-        data = self.doRequest("GET", CT_PROTOBUF, URL_SIMPSONS
-            , "/mh/gameplayconfig", True)
+        data = self.doRequest("GET", CT_PROTOBUF,
+                              URL_SIMPSONS, "/mh/gameplayconfig", True)
         gameConf = ld_pb2.GameplayConfigResponse()
         gameConf.ParseFromString(data)
 
@@ -588,9 +592,9 @@ innerLandData.creationTime: %s""" % (
 
     def skinsSet(self, args):
         data = args[1]
-        self.mLandMessage.skinUnlocksData.skinUnlock      = data
-        self.mLandMessage.skinUnlocksData.skinReceived    = data
-        self.mLandMessage.skinUnlocksData.skinUnlockLen   = len(data)
+        self.mLandMessage.skinUnlocksData.skinUnlock = data
+        self.mLandMessage.skinUnlocksData.skinReceived = data
+        self.mLandMessage.skinUnlocksData.skinUnlockLen = len(data)
         self.mLandMessage.skinUnlocksData.skinReceivedLen = len(data)
 
     def skinsAdd(self, args):
@@ -599,7 +603,7 @@ innerLandData.creationTime: %s""" % (
         toAdd = self.arrSplit(args[1])
         for skinId in toAdd:
             if skinId not in skins:
-               unlocked += "," + str(skinId)
+                unlocked += "," + str(skinId)
         self.skinsSet(('ss', unlocked))
 
     def buildingsMove(self, args):
@@ -644,7 +648,8 @@ innerLandData.creationTime: %s""" % (
                 qst.timesCompleted = 0
                 qst.header.id = self.mLandMessage.innerLandData.nextInstanceID
                 self.mLandMessage.innerLandData.nextInstanceID = qst.header.id + 1
-                self.mLandMessage.innerLandData.numQuests      = len(self.mLandMessage.questData)
+                self.mLandMessage.innerLandData.numQuests = len(
+                    self.mLandMessage.questData)
             qst.questState = 5
             qst.numObjectives = 0
             qst.questScriptState = 0
@@ -657,7 +662,8 @@ innerLandData.creationTime: %s""" % (
         print("questState | timesCompleted | numObjectives | questID")
         for q in self.mLandMessage.questData:
             if q.numObjectives > 0:
-                print("%s | %s | %s | %s" % (q.questState, q.timesCompleted, q.numObjectives, q.questID))
+                print("%s | %s | %s | %s" % (q.questState,
+                                             q.timesCompleted, q.numObjectives, q.questID))
 
     def getSpecialEvent(self, specialEventId):
         for e in self.mLandMessage.specialEventsData.specialEvent:
@@ -689,7 +695,7 @@ innerLandData.creationTime: %s""" % (
         oY = 13
         maxX = 32
         maxY = 32
-        data=''
+        data = ''
         for row in range(oY):
             for col in range(oX):
                 data += '1'
@@ -701,11 +707,11 @@ innerLandData.creationTime: %s""" % (
         self.mLandMessage.friendData.dataVersion = self.dataVerison
         self.mLandMessage.innerLandData.landBlocks = data
         self.mLandMessage.friendData.boardwalkTileCount = 0
-        self.mLandMessage.innerLandData.landBlockWidth  = maxX
+        self.mLandMessage.innerLandData.landBlockWidth = maxX
         self.mLandMessage.innerLandData.landBlockHeight = maxY
 
-        data=''
-        for i in range((oX-2) * oY * 16):
+        data = ''
+        for i in range((oX - 2) * oY * 16):
             data += 'G'
 
         self.mLandMessage.roadsData.mapDataSize = len(data)
@@ -713,7 +719,7 @@ innerLandData.creationTime: %s""" % (
         self.mLandMessage.riversData.mapDataSize = len(data)
         self.mLandMessage.riversData.mapData = data
 
-        data=''
+        data = ''
         for i in range(2 * oY * 16):
             data += 'G'
 
@@ -747,7 +753,8 @@ innerLandData.creationTime: %s""" % (
                         v.value = str(value)
                         break
             if found == False:
-                raise ValueError("ERR: can't found variable with name='%s'" % name)
+                raise ValueError(
+                    "ERR: can't found variable with name='%s'" % name)
 
     # print all land variables
 
@@ -756,20 +763,23 @@ innerLandData.creationTime: %s""" % (
         if (len(args) > 1):
             names = args[1]
         printAll = names == None
-        if printAll == False: ns = names.split(',')
+        if printAll == False:
+            ns = names.split(',')
         print("[specialEvent]")
         for e in self.mLandMessage.specialEventsData.specialEvent:
             for v in e.variables.variable:
-                if printAll == False and ns.count(v.name) == 0: continue
+                if printAll == False and ns.count(v.name) == 0:
+                    continue
                 print("%s=%s" % (v.name, v.value))
         print("[objectVariables]")
         for v in self.mLandMessage.objectVariables.variables.variable:
-            if printAll == False and ns.count(v.name) == 0: continue
+            if printAll == False and ns.count(v.name) == 0:
+                continue
             print("%s=%s" % (v.name, v.value))
 
     def setGamblingType(self, args):
         self.checkDownloaded()
-        gtypes=(
+        gtypes = (
             "BOX",
             "QUEST",
             "DAILYBONUS",
@@ -806,7 +816,7 @@ innerLandData.creationTime: %s""" % (
 
     def messageStoreToFile(self, fn, msg):
         data = msg.SerializeToString()
-        with open(fn, "wb") as f: 
+        with open(fn, "wb") as f:
             f.write(struct.pack('i', int(time.time())))
             f.write(struct.pack('i', 0))
             f.write(struct.pack('i', len(data)))
@@ -823,7 +833,8 @@ innerLandData.creationTime: %s""" % (
         self.messageStoreToFile(args[1], self.mLandMessage)
 
     def doFileOpen(self, args):
-        self.mLandMessage = self.messageLoadFromFile(args[1], ld_pb2.LandMessage())
+        self.mLandMessage = self.messageLoadFromFile(
+            args[1], ld_pb2.LandMessage())
         self.mUid = self.mLandMessage.id
         self.mPrompt = "%s@tsto > " % self.mLandMessage.friendData.name
 
@@ -831,7 +842,8 @@ innerLandData.creationTime: %s""" % (
         self.messageStoreToFile(args[1], self.mLandMessageExtra)
 
     def doFileOpenExtra(self, args):
-        self.mLandMessageExtra = self.messageLoadFromFile(args[1], ld_pb2.ExtraLandMessage())
+        self.mLandMessageExtra = self.messageLoadFromFile(
+            args[1], ld_pb2.ExtraLandMessage())
 
     def tokenPath(self):
         return os.path.join(os.path.expanduser('~'), '.tsto.conf')
@@ -839,9 +851,9 @@ innerLandData.creationTime: %s""" % (
     def tokenStore(self):
         self.checkLogined()
         with open(self.tokenPath(), 'w') as f:
-            f.write(self.mToken     + '\n')
+            f.write(self.mToken + '\n')
             f.write(self.mEncrToken + '\n')
-            f.write(self.mUid       + '\n')
+            f.write(self.mUid + '\n')
 
     def tokenForget(self):
         os.remove(self.tokenPath())
@@ -852,11 +864,12 @@ innerLandData.creationTime: %s""" % (
             with open(self.tokenPath(), 'r') as f:
                 content = [x.strip('\n') for x in f.readlines()]
             if len(content) >= 3:
-                self.mToken     = content[0]
+                self.mToken = content[0]
                 self.mEncrToken = content[1]
-                self.mUid       = content[2]
+                self.mUid = content[2]
                 return True
-        except: pass
+        except:
+            pass
         return False
 
     def tokenLogin(self):
@@ -869,35 +882,41 @@ innerLandData.creationTime: %s""" % (
         files = os.popen('adb shell "ls %s"' % ADB_SAVE_DIR).read()
         print(files)
         if self.mUid not in files:
-            raise TypeError("ERR: LandMessage file not found in save directory.")
+            raise TypeError(
+                "ERR: LandMessage file not found in save directory.")
         fn = '%s.%f' % (self.mUid, time.time())
-        os.popen('adb pull "%s%s" %s'           % (ADB_SAVE_DIR, self.mUid, fn))
-        os.popen('adb pull "%s%sExtra" %sExtra' % (ADB_SAVE_DIR, self.mUid, fn))
+        os.popen('adb pull "%s%s" %s' % (ADB_SAVE_DIR, self.mUid, fn))
+        os.popen('adb pull "%s%sExtra" %sExtra' %
+                 (ADB_SAVE_DIR, self.mUid, fn))
         self.doFileOpen(('load', fn))
         try:
             self.doFileOpenExtra(('loadextra', fn + 'Extra'))
-        except: pass
-    
+        except:
+            pass
+
     def doAdbPush(self):
-        os.popen('adb shell "rm %s%sB"'      % (ADB_SAVE_DIR, self.mUid))
+        os.popen('adb shell "rm %s%sB"' % (ADB_SAVE_DIR, self.mUid))
         os.popen('adb shell "rm %s%sExtraB"' % (ADB_SAVE_DIR, self.mUid))
-        os.popen('adb shell "rm %sLogMetricsSave"'  % (ADB_SAVE_DIR))
+        os.popen('adb shell "rm %sLogMetricsSave"' % (ADB_SAVE_DIR))
         os.popen('adb shell "rm %sLogMessagesSave"' % (ADB_SAVE_DIR))
         fn = '%s.%f' % (self.mUid, time.time())
         self.doFileSave(('save', fn))
-        os.popen('adb push "%s" "%s%s"'           % (fn, ADB_SAVE_DIR, self.mUid))
+        os.popen('adb push "%s" "%s%s"' % (fn, ADB_SAVE_DIR, self.mUid))
         try:
             self.doFileSaveExtra(('saveextra', fn + 'Extra'))
-            os.popen('adb push "%sExtra" "%s%sExtra"' % (fn, ADB_SAVE_DIR, self.mUid))
-        except: pass
+            os.popen('adb push "%sExtra" "%s%sExtra"' %
+                     (fn, ADB_SAVE_DIR, self.mUid))
+        except:
+            pass
 
     def backupsShow(self):
         if self.mUid == None:
             raise TypeError("ERR: I don't know your mayhem ID. Login first.")
         begining = self.mUid + '.'
-        entries  = (fn for fn in os.listdir('.') if fn.startswith(begining))
-        entries  = ((os.stat(path), path) for path in entries)
-        entries  = ((stat[ST_CTIME], path) for stat, path in entries if S_ISREG(stat[ST_MODE]))
+        entries = (fn for fn in os.listdir('.') if fn.startswith(begining))
+        entries = ((os.stat(path), path) for path in entries)
+        entries = ((stat[ST_CTIME], path)
+                   for stat, path in entries if S_ISREG(stat[ST_MODE]))
         for cdate, path in sorted(entries):
             print ("%s | %s" % (time.ctime(cdate), os.path.basename(path)))
 
@@ -951,7 +970,7 @@ help                 - this message
 quit                 - exit""")
 
 if __name__ != '__main__':
-     sys.exit(0)
+    sys.exit(0)
 tsto = TSTO()
 cmdwarg = {
     "sa": tsto.skinsAdd,
@@ -1011,32 +1030,39 @@ cmds = {
 try:
     if len(sys.argv) == 1:
         # console interface
-        while True :
+        while True:
             args = raw_input(tsto.mPrompt).split()
             args_count = len(args)
             if args_count == 0:
                 continue
             func = cmds.get(args[0])
-            if func is not None: func()
+            if func is not None:
+                func()
             else:
                 func = cmdwarg.get(args[0])
-                if func is not None: func(args)
+                if func is not None:
+                    func(args)
             if func is None:
-                print("ERR: unknown command '%s'.\nMaybe you should try 'help'." % (args[0]))
+                print(
+                    "ERR: unknown command '%s'.\nMaybe you should try 'help'." % (args[0]))
     else:
         # command line interface using argparse module (thanks @oskgeek)
         class CustomAction(argparse.Action):
+
             def __call__(self, parser, namespace, values, option_string=None):
                 if not 'ordered_args' in namespace:
                     setattr(namespace, 'ordered_args', [])
                 previous = namespace.ordered_args
                 previous.append((self.dest, values))
                 setattr(namespace, 'ordered_args', previous)
-        parser = argparse.ArgumentParser(description=DESCRIPTION, add_help=False)
+        parser = argparse.ArgumentParser(
+            description=DESCRIPTION, add_help=False)
         for command_name in cmds.keys():
-            parser.add_argument("--%s" % command_name, nargs=0, action=CustomAction)
+            parser.add_argument("--%s" % command_name,
+                                nargs=0, action=CustomAction)
         for command_name in cmdwarg.keys():
-            parser.add_argument("--%s" % command_name, nargs='+', action=CustomAction)
+            parser.add_argument("--%s" % command_name,
+                                nargs='+', action=CustomAction)
         args = parser.parse_args()
         for arguments in args.ordered_args:
             command, values = arguments
