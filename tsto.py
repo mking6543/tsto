@@ -1027,10 +1027,10 @@ cmds = {
     "cleanpurchases": tsto.cleanPurchases,
 }
 
-try:
-    if len(sys.argv) == 1:
-        # console interface
-        while True:
+if len(sys.argv) == 1:
+    # console interface
+    while True:
+        try:
             args = raw_input(tsto.mPrompt).split()
             args_count = len(args)
             if args_count == 0:
@@ -1045,16 +1045,19 @@ try:
             if func is None:
                 print(
                     "ERR: unknown command '%s'.\nMaybe you should try 'help'." % (args[0]))
-    else:
-        # command line interface using argparse module (thanks @oskgeek)
-        class CustomAction(argparse.Action):
+        except Exception as e:
+            print(traceback.print_exc())
+else:
+    # command line interface using argparse module (thanks @oskgeek)
+    class CustomAction(argparse.Action):
 
-            def __call__(self, parser, namespace, values, option_string=None):
-                if not 'ordered_args' in namespace:
-                    setattr(namespace, 'ordered_args', [])
-                previous = namespace.ordered_args
-                previous.append((self.dest, values))
-                setattr(namespace, 'ordered_args', previous)
+        def __call__(self, parser, namespace, values, option_string=None):
+            if not 'ordered_args' in namespace:
+                setattr(namespace, 'ordered_args', [])
+            previous = namespace.ordered_args
+            previous.append((self.dest, values))
+            setattr(namespace, 'ordered_args', previous)
+    try:
         parser = argparse.ArgumentParser(
             description=DESCRIPTION, add_help=False)
         for command_name in cmds.keys():
@@ -1071,5 +1074,6 @@ try:
             else:
                 values.insert(0, command)
                 cmdwarg.get(command)(values)
-except Exception as e:
-    print(traceback.print_exc())
+    except Exception as e:
+        print(traceback.print_exc())
+
