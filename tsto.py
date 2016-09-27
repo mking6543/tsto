@@ -70,8 +70,8 @@ class TSTO:
         headers = self.headers.copy()
         if uncomressedLen > -1:
             headers["Content-Encoding"] = "gzip"
-            headers["Uncompressed-Length"] = uncomressedLen
-            headers["Content-Length"] = len(body)
+            headers["Uncompressed-Length"] = str(uncomressedLen)
+            headers["Content-Length"] = str(len(body))
 
         if keep_alive == True:
             headers["Connection"] = "Keep-Alive"
